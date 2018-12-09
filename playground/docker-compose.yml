@@ -1,15 +1,8 @@
 version: '3'
 services:
-    mitm-proxy:
-      image: mitmproxy/mitmproxy
-      entrypoint: "mitmdump"
-      ports:
-        - "8080:8080"
     sender:
         build:
             context: ./sender/
-        environment:
-          http_proxy: http://mitm-proxy:8080
     mock-server:
         build:
           context: ./server/

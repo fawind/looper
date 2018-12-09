@@ -1,1 +1,7 @@
 .mypy_cache
+
+# mitmdump request dumps
+*.mitmdump
+
+# Project binary
+docker-test

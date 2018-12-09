@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"bytes"
@@ -15,16 +15,16 @@ type composeOptions struct {
 
 const composeTemplate string = `version: '3'
 services:
-	mitm-proxy:
-		image: mitmproxy/mitmproxy
-		entrypoint: "mitmdump {{.MitmArg}} /dump/{{.OutFile}}"
-		ports:
-			- "{{.Port}}:{{.Port}}"
-		volumes:
-			- ./dump:/dump
-	{{.Service}}:
-		environment:
-			http_proxy: http://mitm-proxy:{{.Port}}
+  mitm-proxy:
+    image: mitmproxy/mitmproxy
+    entrypoint: "mitmdump {{.MitmArg}} /dump/{{.OutFile}} -p {{.Port}}"
+    ports:
+      - "{{.Port}}:{{.Port}}"
+    volumes:
+      - ./dump:/dump
+  {{.Service}}:
+    environment:
+      http_proxy: http://mitm-proxy:{{.Port}}
 `
 
 // GetRecordCompose returns the docker-compose config for record mode
