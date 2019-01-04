@@ -2,29 +2,32 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"time"
 )
 
 // Execute executes the root command for the CLI app
 func Execute() {
 	var (
 		service        string
+		testCmd        string
 		port           int
 		outFile        string
 		serviceCompose string
+		dockerSleep    int
 	)
 	var rootCmd = &cobra.Command{Use: "app"}
 	var cmdRecord = &cobra.Command{
 		Use:   "record",
 		Short: "Run in record mode",
 		Run: func(cmd *cobra.Command, args []string) {
-			runRecord(service, port, outFile, serviceCompose)
+			runRecord(service, testCmd, port, outFile, serviceCompose, dockerSleep)
 		},
 	}
 	var cmdReplay = &cobra.Command{
 		Use:   "replay",
 		Short: "Run in replay mode",
 		Run: func(cmd *cobra.Command, args []string) {
-			runReplay(service, port, outFile, serviceCompose)
+			runReplay(service, testCmd, port, outFile, serviceCompose, dockerSleep)
 		},
 	}
 
@@ -33,23 +36,28 @@ func Execute() {
 
 	rootCmd.PersistentFlags().StringVar(
 		&service, "service", "", "Docker service name to test (required)")
+	rootCmd.PersistentFlags().StringVar(
+		&testCmd, "test", "", "Test command to execute (required)")
 	rootCmd.PersistentFlags().IntVar(
 		&port, "port", 9999, "Port to use for the MITM proxy")
 	rootCmd.PersistentFlags().StringVar(
 		&outFile, "out", "out.mitmdump", "File name for the mitm output file")
 	rootCmd.PersistentFlags().StringVar(
 		&serviceCompose, "compose", "./docker-compose.yml", "Default docker-compose file for the services")
+	rootCmd.PersistentFlags().IntVar(
+		&dockerSleep, "sleep", 0, "Time to wait after starting docker services in ms")
 	rootCmd.MarkPersistentFlagRequired("service")
+	rootCmd.MarkPersistentFlagRequired("test")
 
 	rootCmd.Execute()
 }
 
-func runRecord(service string, port int, outFile string, serviceCompose string) {
+func runRecord(service string, testCmd string, port int, outFile string, serviceCompose string, dockerSleep int) {
 	proxyComposeContent := GetRecordCompose(service, port, outFile)
-	ExecTest(serviceCompose, proxyComposeContent)
+	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond)
 }
 
-func runReplay(service string, port int, outFile string, serviceCompose string) {
+func runReplay(service string, testCmd string, port int, outFile string, serviceCompose string, dockerSleep int) {
 	proxyComposeContent := GetReplayCompose(service, port, outFile)
-	ExecTest(serviceCompose, proxyComposeContent)
+	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond)
 }
