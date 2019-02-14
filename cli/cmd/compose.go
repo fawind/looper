@@ -53,7 +53,7 @@ func getCompose(isRecord bool, service string, port int, outFile string) string 
 func getMitmArgs(isRecord bool) string {
 	const (
 		record = "-w"
-		replay = "-C"
+		replay = "-S"
 	)
 	if isRecord {
 		return record

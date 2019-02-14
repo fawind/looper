@@ -11,13 +11,13 @@ go build
 ```bash
 ./docker-test record \
     --service sender \
-    --compose ../examples/echo-service/docker-compose.yml \
+    --compose ./path/to/docker-compose.yml \
     --test 'echo <TESTCMD>'
 ```
 3. Run service in replay mode:
 ```bash
 ./docker-test replay \
     --service sender \
-    --compose ../examples/echo-service/docker-compose.yml \
+    --compose ./path/to/docker-compose.yml \
     --test 'echo <TESTCMD>'
 ```
