@@ -9,9 +9,15 @@ go build
 ```
 2. Run service in record mode:
 ```bash
-./docker-test record --service sender --compose ../playground/docker-compose.yml --test 'echo <TESTCMD>'
+./docker-test record \
+    --service sender \
+    --compose ../examples/echo-service/docker-compose.yml \
+    --test 'echo <TESTCMD>'
 ```
 3. Run service in replay mode:
 ```bash
-./docker-test replay --service sender --compose ../playground/docker-compose.yml --test 'echo <TESTCMD>'
+./docker-test replay \
+    --service sender \
+    --compose ../examples/echo-service/docker-compose.yml \
+    --test 'echo <TESTCMD>'
 ```
