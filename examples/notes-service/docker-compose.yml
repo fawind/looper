@@ -1,0 +1,21 @@
+version: '3'
+services:
+    notes-service:
+      build:
+        context: ./notes-service/
+      ports:
+        - "8080:8080"
+      environment:
+        - PORT=8080
+        - NOTES_STORE_SERVICE=notes-store-service:8080
+        - NOTES_ID_SERVICE=notes-id-service:8080
+    notes-store-service:
+      build:
+        context: ./notes-store-service/
+      environment:
+        - PORT=8080
+    notes-id-service:
+      build:
+        context: ./notes-id-service/
+      environment:
+        - PORT=8080
