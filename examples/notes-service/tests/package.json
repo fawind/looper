@@ -1,0 +1,14 @@
+{
+  "name": "notes-service-tests",
+  "version": "1.0.0",
+  "description": "Test for the Notes-Service",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "axios": "^0.18.0",
+    "expect": "^24.1.0",
+    "mocha": "^5.2.0"
+  }
+}
