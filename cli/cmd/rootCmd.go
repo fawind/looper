@@ -54,7 +54,7 @@ func Execute() {
 
 func runRecord(service string, testCmd string, port int, outFile string, serviceCompose string, dockerSleep int) {
 	proxyComposeContent := GetRecordCompose(service, port, outFile)
-	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond, nil)
+	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond, []string{})
 }
 
 func runReplay(service string, testCmd string, port int, outFile string, serviceCompose string, dockerSleep int) {
