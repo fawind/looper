@@ -38,9 +38,7 @@ func executeTestCmd(testCmdInput string) *exec.Cmd {
 
 func startDocker(serviceCompose string, proxyCompose string, servicesToStart []string) *exec.Cmd {
 	args := []string{"-f", serviceCompose, "-f", proxyCompose, "up"}
-	if servicesToStart != nil {
-		args = append(args, servicesToStart...)
-	}
+	args = append(args, servicesToStart...)
 
 	cmd := exec.Command("docker-compose", args...)
 	execCommand(cmd)
