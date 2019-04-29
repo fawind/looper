@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// MITMProxy holds the name of the docker-service for recording requests
+const MITMProxy = "mitm-proxy"
+
 // Execute executes the root command for the CLI app
 func Execute() {
 	var (
@@ -54,10 +57,10 @@ func Execute() {
 
 func runRecord(service string, testCmd string, port int, outFile string, serviceCompose string, dockerSleep int) {
 	proxyComposeContent := GetRecordCompose(service, port, outFile)
-	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond)
+	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond, []string{})
 }
 
 func runReplay(service string, testCmd string, port int, outFile string, serviceCompose string, dockerSleep int) {
 	proxyComposeContent := GetReplayCompose(service, port, outFile)
-	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond)
+	ExecTest(serviceCompose, proxyComposeContent, testCmd, time.Duration(dockerSleep)*time.Millisecond, []string{service, MITMProxy})
 }

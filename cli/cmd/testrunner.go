@@ -11,10 +11,10 @@ import (
 )
 
 // ExecTest starts the docker images and executes the tests
-func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput string, dockerSleep time.Duration) {
+func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput string, dockerSleep time.Duration, servicesToStart []string) {
 	proxyFile := createTmpFile(proxyComposeContent)
 	defer os.Remove(proxyFile.Name())
-	dockerCmd := startDocker(serviceCompose, proxyFile.Name())
+	dockerCmd := startDocker(serviceCompose, proxyFile.Name(), servicesToStart)
 	if dockerSleep.Nanoseconds() > 0 {
 		log.Println("Waiting for docker services")
 		time.Sleep(dockerSleep)
@@ -36,8 +36,11 @@ func executeTestCmd(testCmdInput string) *exec.Cmd {
 	return cmd
 }
 
-func startDocker(serviceCompose string, proxyCompose string) *exec.Cmd {
-	cmd := exec.Command("docker-compose", "-f", serviceCompose, "-f", proxyCompose, "up")
+func startDocker(serviceCompose string, proxyCompose string, servicesToStart []string) *exec.Cmd {
+	args := []string{"-f", serviceCompose, "-f", proxyCompose, "up"}
+	args = append(args, servicesToStart...)
+
+	cmd := exec.Command("docker-compose", args...)
 	execCommand(cmd)
 	return cmd
 }
