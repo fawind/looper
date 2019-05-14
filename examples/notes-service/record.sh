@@ -2,7 +2,7 @@
 set -e
 
 (cd ../../cli && go build)
-(cd ./tests/ && npm install)
+(cd ./tests && npm install)
 
 ../../cli/docker-test record \
     --service notes-service \
