@@ -2,28 +2,52 @@
   <img src="https://user-images.githubusercontent.com/7422050/56345043-1924ca00-61bf-11e9-9832-58a50379851f.png" width="200" alt="Looper"/>
 </p>
 
+## Usage
 
-## TL;DR
+```
+>> docker-test --help
+Usage:
+  app [command]
+
+Available Commands:
+  help        Help about any command
+  record      Run in record mode
+  replay      Run in replay mode
+
+Flags:
+      --compose string   docker-compose file for the services (default "./docker-compose.yml")
+  -h, --help             help for app
+      --out string       File name for the mitm output file (default "out.mitmdump")
+      --port int         Port to use for the MITM proxy (default 9999)
+      --service string   Docker service name to test (required)
+      --sleep int        Time to wait after starting docker services in ms (optional)
+      --test string      Test command to execute (required)
+```
 
 1. Build the project:
 ```bash
-cd cli
-go build
+cd cli && go build
 ```
+
 2. Run service in record mode:
 ```bash
 ./docker-test record \
-    --service sender \
+    --service my-service \
     --compose ./path/to/docker-compose.yml \
-    --test 'echo <TESTCMD>'
+    --test '<TESTCMD>'
 ```
+
 3. Run service in replay mode:
 ```bash
 ./docker-test replay \
-    --service sender \
+    --service my-service \
     --compose ./path/to/docker-compose.yml \
-    --test 'echo <TESTCMD>'
+    --test '<TESTCMD>'
 ```
+
+### Example
+
+Browse the [notes-service](https://github.com/fawind/docker-test/tree/master/examples/notes-service) app for an example app with predefined commands for [record](https://github.com/fawind/docker-test/blob/master/examples/notes-service/record.sh) and [replay](https://github.com/fawind/docker-test/blob/master/examples/notes-service/replay.sh) actions.
 
 ## Functional Testing for Dockerized Microservices
 
