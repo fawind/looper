@@ -7,7 +7,6 @@
 
 1. Build the project:
 ```bash
-cd cli
 go build
 ```
 2. Run service in record mode:
