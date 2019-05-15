@@ -26,7 +26,7 @@ Flags:
 
 1. Build the project:
 ```bash
-cd cli && go build
+go build
 ```
 
 2. Run service in record mode:
