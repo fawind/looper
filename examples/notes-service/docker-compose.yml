@@ -1,6 +1,9 @@
 version: '3'
 services:
     notes-service:
+      depends_on:
+        - notes-store-service
+        - notes-id-service
       build:
         context: ./notes-service/
       ports:
