@@ -7,5 +7,6 @@ set -e
 ../../cli/docker-test record \
     --service notes-service \
     --compose ./docker-compose.yml \
-    --test 'sleep 30 && (cd ./tests && npm test)'
+    --sleep 30 \
+    --test 'cd ./tests && npm test'
 

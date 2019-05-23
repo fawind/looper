@@ -6,5 +6,6 @@ set -e
 ../../cli/docker-test replay \
     --service notes-service \
     --compose ./docker-compose.yml \
-    --test 'sleep 10 && (cd ./tests && npm test)'
+    --sleep 10 \
+    --test 'cd ./tests && npm test'
 
