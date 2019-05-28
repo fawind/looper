@@ -1,0 +1,17 @@
+language: go
+go:
+  - 1.11.x
+node_js:
+  - 7
+services:
+  - docker
+
+install:
+  - (cd examples/notes-service && make)
+
+script:
+  - (cd examples/notes-service && ./record.sh)
+  - (cd examples/notes-service && ./replay.sh)
+
+cache:
+  npm: true
