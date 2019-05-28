@@ -23,7 +23,7 @@ services:
     volumes:
       - ./dump:/dump
   {{.Service}}:
-    container_name: service
+    container_name: {{.Service}}
     depends_on:
       - mitm-proxy
     environment:

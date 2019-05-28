@@ -12,13 +12,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+const maxDockerRetries = 600 // 10 minutes
+
 // ExecTest starts the docker images and executes the tests
-func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput string, dockerSleep time.Duration, servicesToStart []string) {
+func ExecTest(service string, serviceCompose string, proxyComposeContent string, testCmdInput string, dockerSleep time.Duration, servicesToStart []string) {
 	proxyFile := createTmpFile(proxyComposeContent)
 	defer os.Remove(proxyFile.Name())
 	dockerCmd := startDocker(serviceCompose, proxyFile.Name(), servicesToStart)
 
-	waitForService()
+	waitForService(service)
 
 	if dockerSleep.Nanoseconds() > 0 {
 		log.Println("Sleep before executing tests")
@@ -37,23 +39,28 @@ func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput st
 }
 
 // waitForService waits for the docker container under test to report as running
-func waitForService() {
+func waitForService(serviceName string) {
+	retries := maxDockerRetries
 	log.Println("Waiting for docker services to be started")
-	for executeCheckRunningCmd() {
+	for !executeCheckRunningCmd(serviceName, retries) && retries > 0 {
+		retries--
 		time.Sleep(1 * time.Second)
+	}
+	if retries == 0 {
+		log.Fatal("Error waiting for docker services, timeout reached")
 	}
 	log.Println("Docker services reported as running")
 }
 
-func executeCheckRunningCmd() bool {
-	cmd := exec.Command("sh", "-c", "docker inspect -f {{.State.Running}} service")
-	out, err := cmd.CombinedOutput()
+func executeCheckRunningCmd(serviceName string, retries int) bool {
+	cmd := exec.Command("sh", "-c", "docker inspect -f {{.State.Running}} "+serviceName)
+	out, err := cmd.Output()
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "Error executing docker inspect command"))
+		return false
 	}
 	isRunning, err := strconv.ParseBool(strings.TrimSuffix(string(out), "\n"))
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "Error parsing docker inspect output"))
+		return false
 	}
 	return isRunning
 }

@@ -2,7 +2,7 @@
   <img src="https://user-images.githubusercontent.com/7422050/56345043-1924ca00-61bf-11e9-9832-58a50379851f.png" width="200" alt="Looper"/>
 </p>
 
-## Usage
+## Usage [![Build Status](https://travis-ci.com/fawind/docker-test.svg?token=RTEhNHKreGSnaC3U1jh2&branch=master)](https://travis-ci.com/fawind/docker-test)
 
 ```
 >> docker-test --help
