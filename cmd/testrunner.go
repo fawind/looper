@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -22,7 +21,7 @@ func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput st
 	waitForService()
 
 	if dockerSleep.Nanoseconds() > 0 {
-		log.Println("Waiting for docker services")
+		log.Println("Sleep before executing tests")
 		time.Sleep(dockerSleep)
 	}
 
@@ -39,23 +38,24 @@ func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput st
 
 // waitForService waits for the docker container under test to report as running
 func waitForService() {
+	log.Println("Waiting for docker services to be started")
 	for executeCheckRunningCmd() {
 		time.Sleep(1 * time.Second)
 	}
-	fmt.Println("Docker container reported as running.")
+	log.Println("Docker services reported as running")
 }
 
 func executeCheckRunningCmd() bool {
 	cmd := exec.Command("sh", "-c", "docker inspect -f {{.State.Running}} service")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		log.Fatal(errors.Wrap(err, "Error executing docker inspect command"))
 	}
-	b, err := strconv.ParseBool(strings.TrimSuffix(string(out), "\n"))
-	if err == nil {
-		return b
+	isRunning, err := strconv.ParseBool(strings.TrimSuffix(string(out), "\n"))
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "Error parsing docker inspect output"))
 	}
-	return false
+	return isRunning
 }
 
 func executeTestCmd(testCmdInput string) *exec.Cmd {
