@@ -1,13 +1,16 @@
 package cmd
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // ExecTest starts the docker images and executes the tests
@@ -15,10 +18,14 @@ func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput st
 	proxyFile := createTmpFile(proxyComposeContent)
 	defer os.Remove(proxyFile.Name())
 	dockerCmd := startDocker(serviceCompose, proxyFile.Name(), servicesToStart)
+
+	waitForService()
+
 	if dockerSleep.Nanoseconds() > 0 {
 		log.Println("Waiting for docker services")
 		time.Sleep(dockerSleep)
 	}
+
 	testCmd := executeTestCmd(testCmdInput)
 	testErr := testCmd.Wait()
 	log.Println("Test command finished. Stopping docker services...")
@@ -28,6 +35,27 @@ func ExecTest(serviceCompose string, proxyComposeContent string, testCmdInput st
 	if testErr != nil {
 		log.Fatal(errors.Wrap(testErr, "Error executing test command"))
 	}
+}
+
+// waitForService waits for the docker container under test to report as running
+func waitForService() {
+	for executeCheckRunningCmd() {
+		time.Sleep(1 * time.Second)
+	}
+	fmt.Println("Docker container reported as running.")
+}
+
+func executeCheckRunningCmd() bool {
+	cmd := exec.Command("sh", "-c", "docker inspect -f {{.State.Running}} service")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Fatalf("cmd.Run() failed with %s\n", err)
+	}
+	b, err := strconv.ParseBool(strings.TrimSuffix(string(out), "\n"))
+	if err == nil {
+		return b
+	}
+	return false
 }
 
 func executeTestCmd(testCmdInput string) *exec.Cmd {
