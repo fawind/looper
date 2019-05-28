@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-(cd ../../cli && go build)
+(cd ../.. && go build)
 
-../../cli/docker-test replay \
+../../docker-test replay \
     --service notes-service \
     --compose ./docker-compose.yml \
-    --sleep 10 \
+    --sleep 3000 \
     --test 'cd ./tests && npm test'
 
