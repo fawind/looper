@@ -11,6 +11,7 @@ install:
 
 script:
   - (cd examples/notes-service && ./record.sh)
+  - sleep 1
   - (cd examples/notes-service && ./replay.sh)
 
 cache:
