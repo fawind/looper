@@ -24,14 +24,17 @@ Flags:
       --test string      Test command to execute (required)
 ```
 
-1. Build the project:
+1. Install or build the project:
 ```bash
+# Build
 go build
+# Install using go get
+go get github.com/fawind/docker-test
 ```
 
 2. Run service in record mode:
 ```bash
-./docker-test record \
+docker-test record \
     --service my-service \
     --compose ./path/to/docker-compose.yml \
     --test '<TESTCMD>'
@@ -39,13 +42,13 @@ go build
 
 3. Run service in replay mode:
 ```bash
-./docker-test replay \
+docker-test replay \
     --service my-service \
     --compose ./path/to/docker-compose.yml \
     --test '<TESTCMD>'
 ```
 
-### Example
+### Example Application
 
 Browse the [notes-service](https://github.com/fawind/docker-test/tree/master/examples/notes-service) app for an example app with predefined commands for [record](https://github.com/fawind/docker-test/blob/master/examples/notes-service/record.sh) and [replay](https://github.com/fawind/docker-test/blob/master/examples/notes-service/replay.sh) actions.
 
