@@ -11,17 +11,18 @@ type composeOptions struct {
 	MitmArg string
 	OutFile string
 	Port    int
+	DumpDir string
 }
 
 const composeTemplate string = `version: '3'
 services:
   mitm-proxy:
     image: mitmproxy/mitmproxy
-    entrypoint: "mitmdump {{.MitmArg}} /dump/{{.OutFile}} -p {{.Port}}"
+    entrypoint: "mitmdump {{.MitmArg}} /{{.DumpDir}}/{{.OutFile}} -p {{.Port}}"
     ports:
       - "{{.Port}}:{{.Port}}"
     volumes:
-      - ./dump:/dump
+      - ./{{.DumpDir}}:/{{.DumpDir}}
   {{.Service}}:
     container_name: {{.Service}}
     depends_on:
@@ -31,17 +32,17 @@ services:
 `
 
 // GetRecordCompose returns the docker-compose config for record mode
-func GetRecordCompose(service string, port int, outFile string) string {
-	return getCompose(true, service, port, outFile)
+func GetRecordCompose(service string, port int, outFile string, dumpDir string) string {
+	return getCompose(true, service, port, outFile, dumpDir)
 }
 
 // GetReplayCompose returns the docker-compose config for replaying mode
-func GetReplayCompose(service string, port int, outFile string) string {
-	return getCompose(false, service, port, outFile)
+func GetReplayCompose(service string, port int, outFile string, dumpDir string) string {
+	return getCompose(false, service, port, outFile, dumpDir)
 }
 
-func getCompose(isRecord bool, service string, port int, outFile string) string {
-	var tmplOptions = composeOptions{service, getMitmArgs(isRecord), outFile, port}
+func getCompose(isRecord bool, service string, port int, outFile string, dumpDir string) string {
+	var tmplOptions = composeOptions{service, getMitmArgs(isRecord), outFile, port, dumpDir}
 	var tmpl, err = template.New("MITM Docker Compose").Parse(composeTemplate)
 	if err != nil {
 		panic(errors.Wrap(err, "Error parsing template"))
