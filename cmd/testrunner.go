@@ -5,14 +5,31 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 )
 
 const maxDockerRetries = 600 // 10 minutes
+
+// ExecProxy only starts the MITM docker image
+func ExecProxy(proxyComposeContent string) {
+	proxyFile := createTmpFile(proxyComposeContent)
+	defer os.Remove(proxyFile.Name())
+	mitmCommand := startMitmProxy(proxyFile.Name())
+
+	waitForService(MITMProxy)
+	waitForCtrlC()
+
+	log.Println("Proxy stopped. Shutting down docker services...")
+	if err := mitmCommand.Process.Signal(os.Interrupt); err != nil {
+		log.Fatal(errors.Wrap(err, "Error closing docker command"))
+	}
+}
 
 // ExecTest starts the docker images and executes the tests
 func ExecTest(service string, serviceCompose string, proxyComposeContent string, testCmdInput string, dockerSleep time.Duration, servicesToStart []string) {
@@ -42,7 +59,7 @@ func ExecTest(service string, serviceCompose string, proxyComposeContent string,
 func waitForService(serviceName string) {
 	retries := maxDockerRetries
 	log.Println("Waiting for docker services to be started")
-	for !executeCheckRunningCmd(serviceName, retries) && retries > 0 {
+	for !executeCheckRunningCmd(serviceName) && retries > 0 {
 		retries--
 		time.Sleep(1 * time.Second)
 	}
@@ -52,7 +69,7 @@ func waitForService(serviceName string) {
 	log.Println("Docker services reported as running")
 }
 
-func executeCheckRunningCmd(serviceName string, retries int) bool {
+func executeCheckRunningCmd(serviceName string) bool {
 	cmd := exec.Command("sh", "-c", "docker inspect -f {{.State.Running}} "+serviceName)
 	out, err := cmd.Output()
 	if err != nil {
@@ -71,10 +88,16 @@ func executeTestCmd(testCmdInput string) *exec.Cmd {
 	return cmd
 }
 
+func startMitmProxy(proxyCompose string) *exec.Cmd {
+	args := []string{"-f", proxyCompose, "up"}
+	cmd := exec.Command("docker-compose", args...)
+	execCommand(cmd)
+	return cmd
+}
+
 func startDocker(serviceCompose string, proxyCompose string, servicesToStart []string) *exec.Cmd {
 	args := []string{"-f", serviceCompose, "-f", proxyCompose, "up"}
 	args = append(args, servicesToStart...)
-
 	cmd := exec.Command("docker-compose", args...)
 	execCommand(cmd)
 	return cmd
@@ -101,4 +124,18 @@ func execCommand(cmd *exec.Cmd) {
 	if err := cmd.Start(); err != nil {
 		log.Fatal(errors.Wrap(err, "Error executing command"))
 	}
+}
+
+
+func waitForCtrlC() {
+	var endWaiter sync.WaitGroup
+	endWaiter.Add(1)
+	var signalChannel chan os.Signal
+	signalChannel = make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt)
+	go func() {
+		<-signalChannel
+		endWaiter.Done()
+	}()
+	endWaiter.Wait()
 }

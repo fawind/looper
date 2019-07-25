@@ -7,42 +7,70 @@ import (
 )
 
 type composeOptions struct {
-	Service string
-	MitmArg string
-	OutFile string
-	Port    int
-	DumpDir string
+	ProxyMode bool
+	Service   string
+	ProxyName string
+	MITMArgs  string
+	OutFile   string
+	Port      int
+	DumpDir   string
 }
 
 const composeTemplate string = `version: '3'
 services:
-  mitm-proxy:
+  {{.ProxyName}}:
+    container_name: "{{.ProxyName}}"
     image: mitmproxy/mitmproxy
-    entrypoint: "mitmdump {{.MitmArg}} /{{.DumpDir}}/{{.OutFile}} -p {{.Port}}"
+    entrypoint: "mitmdump {{.MITMArgs}} /{{.DumpDir}}/{{.OutFile}} -p {{.Port}}"
+    {{if .ProxyMode}}network_mode: host{{end}}
     ports:
       - "{{.Port}}:{{.Port}}"
     volumes:
       - ./{{.DumpDir}}:/{{.DumpDir}}
-  {{.Service}}:
+  {{if not .ProxyMode}}{{.Service}}:
     container_name: {{.Service}}
     depends_on:
       - mitm-proxy
     environment:
       http_proxy: http://mitm-proxy:{{.Port}}
+  {{end}}
 `
 
-// GetRecordCompose returns the docker-compose config for record mode
-func GetRecordCompose(service string, port int, outFile string, dumpDir string) string {
-	return getCompose(true, service, port, outFile, dumpDir)
+type RecordOption func(options *composeOptions)
+
+type ModeOption func(options *composeOptions)
+
+func SetDockerMode(service string) ModeOption {
+	return func(args *composeOptions) {
+		args.ProxyMode = false
+		args.Service = service
+	}
 }
 
-// GetReplayCompose returns the docker-compose config for replaying mode
-func GetReplayCompose(service string, port int, outFile string, dumpDir string) string {
-	return getCompose(false, service, port, outFile, dumpDir)
+func SetProxyMode() ModeOption {
+	return func(args *composeOptions) {
+		args.ProxyMode = true
+		args.Service = ""
+	}
 }
 
-func getCompose(isRecord bool, service string, port int, outFile string, dumpDir string) string {
-	var tmplOptions = composeOptions{service, getMitmArgs(isRecord), outFile, port, dumpDir}
+func SetRecord() RecordOption {
+	return func(args *composeOptions) {
+		args.MITMArgs = getMitmArgs(true)
+	}
+}
+
+func SetReplay() RecordOption {
+	return func(args *composeOptions) {
+		args.MITMArgs = getMitmArgs(false)
+	}
+}
+
+// GetCompose returns the generated docker-compose
+func GetCompose(recordSetter RecordOption, modeSetter ModeOption, port int, outFile string, dumpDir string) string {
+	var tmplOptions = &composeOptions{OutFile: outFile, Port: port, DumpDir: dumpDir, ProxyName: MITMProxy}
+	recordSetter(tmplOptions)
+	modeSetter(tmplOptions)
 	var tmpl, err = template.New("MITM Docker Compose").Parse(composeTemplate)
 	if err != nil {
 		panic(errors.Wrap(err, "Error parsing template"))
