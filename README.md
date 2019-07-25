@@ -6,6 +6,7 @@
 
 ```
 >> docker-test --help
+
 Usage:
   app [command]
 
@@ -15,16 +16,19 @@ Available Commands:
   replay      Run in replay mode
 
 Flags:
-      --compose string   docker-compose file for the services (default "./docker-compose.yml")
-  -h, --help             help for app
-      --out string       File name for the mitm output file (default "out.mitmdump")
-      --port int         Port to use for the MITM proxy (default 9999)
-      --service string   Docker service name to test (required)
-      --sleep int        Time to wait after starting docker services in ms (optional)
-      --test string      Test command to execute (required)
+      --compose string     Default docker-compose file for the services (default "./docker-compose.yml")
+      --directory string   Directory to store the test dumps in (default "replay-dumps")
+  -h, --help               help for app
+      --out string         File name for the mitm output file (required when run in stand-alone proxy mode)
+      --port int           Port to use for the MITM proxy (default 9999)
+      --proxyOnly          Only start proxy in stand-alone mode
+      --service string     Docker setService name to test (required when not run in stand-alone proxy mode)
+      --sleep int          Time to wait after starting docker services in ms
+      --test string        Test command to execute (required when not run in stand-alone proxy mode)
 ```
 
-1. Install or build the project:
+### Install or build the project:
+
 ```bash
 # Build
 go build
@@ -32,7 +36,9 @@ go build
 go get github.com/fawind/docker-test
 ```
 
-2. Run service in record mode:
+### Test docker-compose services
+
+1. Run service in record mode:
 ```bash
 docker-test record \
     --service my-service \
@@ -40,13 +46,31 @@ docker-test record \
     --test '<TESTCMD>'
 ```
 
-3. Run service in replay mode:
+2. Run service in replay mode:
 ```bash
 docker-test replay \
     --service my-service \
     --compose ./path/to/docker-compose.yml \
     --test '<TESTCMD>'
 ```
+
+### Run proxy in stand-alone mode
+
+1. Run proxy in record mode:
+```bash
+docker-test record \
+    --proxyOnly \
+    --out my-dump.mitmdump
+```
+2. Set up a proxy of your service-under-test. E.g. using `export http_proxy='http://0.0.0.0:9999'`.
+3. Run your tests. Afterwards you have to manually close the proxy using `Ctrl-C`.
+4. Run proxy in replay mode:
+```bash
+docker-test replay \
+    --proxyOnly \
+    --out my-dump.mitmdump
+```
+5. Run your tests again. This time all responses will be replayed.
 
 ### Example Application
 
