@@ -1,7 +1,7 @@
 FROM golang
 
 ENV GO111MODULE=on
-ENV SRC_DIR=/go/src/github.com/fawind/docker-test/examples/notes-service/notes-service
+ENV SRC_DIR=/go/src/github.com/fawind/looper/examples/notes-service/notes-service
 
 WORKDIR /app
 
