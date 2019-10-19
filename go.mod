@@ -1,4 +1,4 @@
-module github.com/fawind/docker-test
+module github.com/fawind/looper
 
 require (
 	github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57 // indirect

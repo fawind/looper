@@ -1,6 +1,6 @@
 package main
 
-import "github.com/fawind/docker-test/cmd"
+import "github.com/fawind/looper/cmd"
 
 func main() {
 	cmd.Execute()

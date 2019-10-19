@@ -1,1 +1,1 @@
-module github.com/fawind/docker-test/examples/notes-service/notes-id-service
+module github.com/fawind/looper/examples/notes-service/notes-id-service

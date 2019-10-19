@@ -4,4 +4,4 @@
 *.mitmdump
 
 # Project binary
-docker-test
+looper
